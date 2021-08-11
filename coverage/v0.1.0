@@ -1,0 +1,8 @@
+github.com/yut-kt/gowave/gowave.go:16:	New			75.0%
+github.com/yut-kt/gowave/gowave.go:24:	chunkRead		76.9%
+github.com/yut-kt/gowave/gowave.go:47:	ReadSamples		80.0%
+github.com/yut-kt/gowave/gowave.go:56:	ReadNSamples		75.0%
+github.com/yut-kt/gowave/gowave.go:64:	GetSamplesAlreadyRead	100.0%
+github.com/yut-kt/gowave/gowave.go:68:	GetNumChannels		0.0%
+github.com/yut-kt/gowave/gowave.go:72:	GetSampleRate		0.0%
+total:					(statements)		72.4%
