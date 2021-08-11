@@ -20,13 +20,24 @@ func NewDataChunk(file io.Reader) (*DataChunk, error) {
 		return nil, err
 	}
 
-	return &DataChunk{
+	chunk := &DataChunk{
 		id:   string(chunkHeaderBytes[:4]),
 		size: binary.LittleEndian.Uint32(chunkHeaderBytes[4:]),
-	}, nil
+	}
+	if err := chunk.validate(); err != nil {
+		return nil, err
+	}
+	return chunk, nil
 }
 
-func (dataChunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingNum int) (interface{}, error) {
+func (chunk *DataChunk) validate() error {
+	if chunk.id != "data" {
+		return errors.New("DataChunk: ChunkID must be [data]")
+	}
+	return nil
+}
+
+func (chunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingNum int) (interface{}, error) {
 	var (
 		data    interface{}
 		funcErr error
@@ -43,21 +54,21 @@ func (dataChunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, sampl
 		}
 	}
 
-	switch v := dataChunk.data.(type) {
+	switch v := chunk.data.(type) {
 	case []uint8:
 		d, ok := data.([]uint8)
 		if !ok {
 			return nil, errors.New("not match interface type")
 		}
-		dataChunk.data = append(v, d...)
+		chunk.data = append(v, d...)
 	case []int16:
 		d, ok := data.([]int16)
 		if !ok {
 			return nil, errors.New("not match interface type")
 		}
-		dataChunk.data = append(v, d...)
+		chunk.data = append(v, d...)
 	default:
-		dataChunk.data = data
+		chunk.data = data
 	}
 	return data, nil
 }
@@ -134,6 +145,6 @@ func readNSamples(file io.Reader, bitsPerSample uint16, samplingN int) (interfac
 	return data, nil
 }
 
-func (dataChunk *DataChunk) GetData() interface{} {
-	return dataChunk.data
+func (chunk *DataChunk) GetData() interface{} {
+	return chunk.data
 }
