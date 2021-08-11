@@ -2,6 +2,7 @@ package chunk
 
 import (
 	"encoding/binary"
+	"errors"
 	"io"
 )
 
@@ -22,7 +23,7 @@ func NewFmtChunk(file io.Reader) (*FmtChunk, error) {
 	if _, err := io.ReadFull(file, chunkBytes); err != nil {
 		return nil, err
 	}
-	return &FmtChunk{
+	chunk := &FmtChunk{
 		id:            string(chunkBytes[:4]),
 		size:          binary.LittleEndian.Uint32(chunkBytes[4:]),
 		audioFormat:   binary.LittleEndian.Uint16(chunkBytes[8:]),
@@ -31,9 +32,40 @@ func NewFmtChunk(file io.Reader) (*FmtChunk, error) {
 		byteRate:      binary.LittleEndian.Uint32(chunkBytes[16:]),
 		blockAlign:    binary.LittleEndian.Uint16(chunkBytes[20:]),
 		bitsPerSample: binary.LittleEndian.Uint16(chunkBytes[22:]),
-	}, nil
+	}
+	if err := chunk.validate(); err != nil {
+		return nil, err
+	}
+	return chunk, nil
 }
 
-func (fmtChunk *FmtChunk) GetBitsPerSample() uint16 {
-	return fmtChunk.bitsPerSample
+func (chunk *FmtChunk) validate() error {
+	if chunk.id != "fmt " {
+		return errors.New("FmtChunk: SubChunk1ID must be [fmt ]")
+	}
+	if chunk.size != 16 {
+		return errors.New("FmtChunk: SubChunk1Size still only supports 16 bytes")
+	}
+	if chunk.audioFormat != 1 {
+		return errors.New("FmtChunk: AudioFormat still only supports 1(PCM)")
+	}
+	if chunk.numChannels != 1 {
+		return errors.New("FmtChunk: NumChannels still only supports 1(Mono)")
+	}
+	if chunk.bitsPerSample != 8 && chunk.bitsPerSample != 16 {
+		return errors.New("FmtChunk: BitsPerSample still only supports 8 or 16")
+	}
+	return nil
+}
+
+func (chunk *FmtChunk) GetNumChannels() uint16 {
+	return chunk.numChannels
+}
+
+func (chunk *FmtChunk) GetSampleRate() uint32 {
+	return chunk.sampleRate
+}
+
+func (chunk *FmtChunk) GetBitsPerSample() uint16 {
+	return chunk.bitsPerSample
 }
