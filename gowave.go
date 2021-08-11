@@ -64,3 +64,11 @@ func (wave *Wave) ReadNSamples(samplingNum int) (interface{}, error) {
 func (wave *Wave) GetSamplesAlreadyRead() interface{} {
 	return wave.dataChunk.GetData()
 }
+
+func (wave *Wave) GetNumChannels() uint16 {
+	return wave.fmtChunk.GetNumChannels()
+}
+
+func (wave Wave) GetSampleRate() uint32 {
+	return wave.fmtChunk.GetSampleRate()
+}

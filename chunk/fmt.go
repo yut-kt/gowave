@@ -58,6 +58,14 @@ func (chunk *FmtChunk) validate() error {
 	return nil
 }
 
+func (chunk *FmtChunk) GetNumChannels() uint16 {
+	return chunk.numChannels
+}
+
+func (chunk *FmtChunk) GetSampleRate() uint32 {
+	return chunk.sampleRate
+}
+
 func (chunk *FmtChunk) GetBitsPerSample() uint16 {
 	return chunk.bitsPerSample
 }
