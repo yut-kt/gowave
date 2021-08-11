@@ -58,6 +58,24 @@ func main() {
 
 See [gowave_examples_test.go](https://github.com/yut-kt/gowave/blob/main/gowave_examples_test.go) for detailed Usage
 
+## Supported format
+Format
+
+- PCM
+- ~~IEEE float (read-only)~~
+
+Number of channels
+
+- 1(mono)
+- ~~2(stereo)~~
+
+Bits per sample
+
+- ~~32-bit~~
+- ~~24-bit~~
+- 16-bit
+- 8-bit
+
 ## Contribution
 1. Fork ([https://github.com/yut-kt/gowave/fork](https://github.com/yut-kt/gowave/fork))
 2. Checkout the latest version of branch
