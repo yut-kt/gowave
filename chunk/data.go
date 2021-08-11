@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -28,65 +27,17 @@ func NewDataChunk(file io.Reader) (*DataChunk, error) {
 }
 
 func (dataChunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingNum int) (interface{}, error) {
-	readAllFunc := func(file io.Reader, bitsPerSample uint16) (interface{}, error) {
-		var data interface{}
-
-		// TODO: Consider calculating from the seek position and the eof position in io.ReadSeeker.
-		b, err := io.ReadAll(file)
-		if err != nil {
-			return nil, err
-		}
-		buf := bytes.NewReader(b)
-
-		switch bitsPerSample {
-		case 8:
-			const samplingBytes = 1
-			if len(b) == 0 {
-				return make([]uint8, 0), nil
-			}
-			data = make([]uint8, len(b)/samplingBytes)
-		case 16:
-			const samplingBytes = 2
-			if len(b) == 0 {
-				return make([]int16, 0), nil
-			}
-			data = make([]int16, len(b)/samplingBytes)
-		default:
-			return nil, errors.New("not supported bitPerSample number")
-		}
-
-		if err := binary.Read(buf, binary.LittleEndian, data); err != nil {
-			return nil, err
-		}
-		return data, nil
-	}
-
-	readNumFunc := func(file io.Reader, bitsPerSample uint16, samplingNum int) (interface{}, error) {
-		var data interface{}
-
-		switch bitsPerSample {
-		case 8:
-			data = make([]uint8, samplingNum)
-		case 16:
-			data = make([]int16, samplingNum)
-		default:
-			return nil, errors.New("not supported bitPerSample number")
-		}
-		if err := binary.Read(file, binary.LittleEndian, data); err != nil {
-			return nil, err
-		}
-		return data, nil
-	}
-
-	var data interface{}
-	var funcErr error
+	var (
+		data    interface{}
+		funcErr error
+	)
 	if samplingNum == -1 {
-		data, funcErr = readAllFunc(file, bitsPerSample)
+		data, funcErr = readAllSamples(file, bitsPerSample)
 		if funcErr != nil {
 			return nil, funcErr
 		}
 	} else {
-		data, funcErr = readNumFunc(file, bitsPerSample, samplingNum)
+		data, funcErr = readNSamples(file, bitsPerSample, samplingNum)
 		if funcErr != nil {
 			return nil, funcErr
 		}
@@ -94,7 +45,6 @@ func (dataChunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, sampl
 
 	switch v := dataChunk.data.(type) {
 	case []uint8:
-		fmt.Println("uint8")
 		d, ok := data.([]uint8)
 		if !ok {
 			return nil, errors.New("not match interface type")
@@ -108,6 +58,78 @@ func (dataChunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, sampl
 		dataChunk.data = append(v, d...)
 	default:
 		dataChunk.data = data
+	}
+	return data, nil
+}
+
+func readAllSamples(file io.Reader, bitsPerSample uint16) (interface{}, error) {
+	var data interface{}
+
+	// TODO: Consider calculating from the seek position and the eof position in io.ReadSeeker.
+	b, err := io.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewReader(b)
+
+	switch bitsPerSample {
+	case 8:
+		const samplingBytes = 1
+		if len(b) == 0 {
+			return make([]uint8, 0), nil
+		}
+		data = make([]uint8, len(b)/samplingBytes)
+	case 16:
+		const samplingBytes = 2
+		if len(b) == 0 {
+			return make([]int16, 0), nil
+		}
+		data = make([]int16, len(b)/samplingBytes)
+	default:
+		return nil, errors.New("not supported bitPerSample number")
+	}
+
+	if err := binary.Read(buf, binary.LittleEndian, data); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func readNSamples(file io.Reader, bitsPerSample uint16, samplingN int) (interface{}, error) {
+	var (
+		data               interface{}
+		buf                *bytes.Reader
+		wasReadableSampleN int
+	)
+
+	switch bitsPerSample {
+	case 8:
+		const samplingBytes = 1
+		b := make([]byte, samplingN*samplingBytes)
+		n, err := io.ReadFull(file, b)
+		if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
+			return nil, err
+		}
+		// store
+		buf = bytes.NewReader(b[:n])
+		wasReadableSampleN = n / samplingBytes
+		data = make([]uint8, wasReadableSampleN)
+	case 16:
+		const samplingBytes = 2
+		b := make([]byte, samplingN*samplingBytes)
+		n, err := io.ReadFull(file, b)
+		if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
+			return nil, err
+		}
+		// store
+		buf = bytes.NewReader(b[:n])
+		wasReadableSampleN = n / samplingBytes
+		data = make([]int16, wasReadableSampleN)
+	default:
+		return nil, errors.New("not supported bitPerSample number")
+	}
+	if err := binary.Read(buf, binary.LittleEndian, data); err != nil {
+		return nil, err
 	}
 	return data, nil
 }
