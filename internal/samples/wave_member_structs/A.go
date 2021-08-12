@@ -3,7 +3,7 @@ package sample_wave_structs
 
 import "github.com/yut-kt/gowave/internal/chunk"
 
-func GetRiffChunk() *chunk.RiffChunk {
+func GetRiffChunkA() *chunk.RiffChunk {
 	return &chunk.RiffChunk{
 		ID:     "RIFF",
 		Size:   1,
@@ -11,7 +11,7 @@ func GetRiffChunk() *chunk.RiffChunk {
 	}
 }
 
-func GetFmtChunk() *chunk.FmtChunk {
+func GetFmtChunkA() *chunk.FmtChunk {
 	return &chunk.FmtChunk{
 		ID:            "fmt ",
 		Size:          16,
@@ -24,7 +24,7 @@ func GetFmtChunk() *chunk.FmtChunk {
 	}
 }
 
-func GetDataChunk() *chunk.DataChunk {
+func GetDataChunkA() *chunk.DataChunk {
 	return &chunk.DataChunk{
 		ID:   "data",
 		Size: 0,

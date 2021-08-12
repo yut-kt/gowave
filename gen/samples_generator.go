@@ -57,6 +57,7 @@ func main() {
 		if err := json.Unmarshal(b, &w); err != nil {
 			panic(err)
 		}
+		w.FileName = fileName
 
 		// WriteSampleWave
 		data := []interface{}{
