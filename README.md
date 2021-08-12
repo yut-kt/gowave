@@ -79,5 +79,11 @@ Bits per sample
 - 16-bit
 - 8-bit
 
+## Reference wave format
+- en
+    - http://soundfile.sapp.org/doc/WaveFormat/
+- ja
+    - http://www.graffiti.jp/pc/p030506a.htm
+
 ## License
 gowave is released under the [MIT License](https://raw.githubusercontent.com/yut-kt/gowave/main/LICENSE).
