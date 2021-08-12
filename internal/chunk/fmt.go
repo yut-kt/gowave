@@ -7,13 +7,13 @@ import (
 )
 
 type FmtChunk struct {
-	id            string
-	size          uint32
-	audioFormat   uint16
+	ID            string
+	Size          uint32
+	AudioFormat   uint16
 	NumChannels   uint16
 	SampleRate    uint32
-	byteRate      uint32
-	blockAlign    uint16
+	ByteRate      uint32
+	BlockAlign    uint16
 	BitsPerSample uint16
 }
 
@@ -24,13 +24,13 @@ func NewFmtChunk(file io.Reader) (*FmtChunk, error) {
 		return nil, err
 	}
 	chunk := &FmtChunk{
-		id:            string(chunkBytes[:4]),
-		size:          binary.LittleEndian.Uint32(chunkBytes[4:]),
-		audioFormat:   binary.LittleEndian.Uint16(chunkBytes[8:]),
+		ID:            string(chunkBytes[:4]),
+		Size:          binary.LittleEndian.Uint32(chunkBytes[4:]),
+		AudioFormat:   binary.LittleEndian.Uint16(chunkBytes[8:]),
 		NumChannels:   binary.LittleEndian.Uint16(chunkBytes[10:]),
 		SampleRate:    binary.LittleEndian.Uint32(chunkBytes[12:]),
-		byteRate:      binary.LittleEndian.Uint32(chunkBytes[16:]),
-		blockAlign:    binary.LittleEndian.Uint16(chunkBytes[20:]),
+		ByteRate:      binary.LittleEndian.Uint32(chunkBytes[16:]),
+		BlockAlign:    binary.LittleEndian.Uint16(chunkBytes[20:]),
 		BitsPerSample: binary.LittleEndian.Uint16(chunkBytes[22:]),
 	}
 	if err := chunk.validate(); err != nil {
@@ -40,13 +40,13 @@ func NewFmtChunk(file io.Reader) (*FmtChunk, error) {
 }
 
 func (chunk *FmtChunk) validate() error {
-	if chunk.id != "fmt " {
+	if chunk.ID != "fmt " {
 		return errors.New("FmtChunk: SubChunk1ID must be [fmt ]")
 	}
-	if chunk.size != 16 {
+	if chunk.Size != 16 {
 		return errors.New("FmtChunk: SubChunk1Size still only supports 16 bytes")
 	}
-	if chunk.audioFormat != 1 {
+	if chunk.AudioFormat != 1 {
 		return errors.New("FmtChunk: AudioFormat still only supports 1(PCM)")
 	}
 	if chunk.NumChannels != 1 {

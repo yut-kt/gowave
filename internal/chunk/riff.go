@@ -7,9 +7,9 @@ import (
 )
 
 type RiffChunk struct {
-	id     string
-	size   uint32
-	format string
+	ID     string
+	Size   uint32
+	Format string
 }
 
 func NewRiffChunk(file io.Reader) (*RiffChunk, error) {
@@ -20,9 +20,9 @@ func NewRiffChunk(file io.Reader) (*RiffChunk, error) {
 	}
 
 	chunk := &RiffChunk{
-		id:     string(chunkBytes[:4]),
-		size:   binary.LittleEndian.Uint32(chunkBytes[4:]),
-		format: string(chunkBytes[8:]),
+		ID:     string(chunkBytes[:4]),
+		Size:   binary.LittleEndian.Uint32(chunkBytes[4:]),
+		Format: string(chunkBytes[8:]),
 	}
 	if err := chunk.validate(); err != nil {
 		return nil, err
@@ -31,10 +31,10 @@ func NewRiffChunk(file io.Reader) (*RiffChunk, error) {
 }
 
 func (chunk *RiffChunk) validate() error {
-	if chunk.id != "RIFF" {
+	if chunk.ID != "RIFF" {
 		return errors.New("RiffChunk: ChunkID must be [RIFF]")
 	}
-	if chunk.format != "WAVE" {
+	if chunk.Format != "WAVE" {
 		return errors.New("RiffChunk: Format must be [WAVE]")
 	}
 	return nil

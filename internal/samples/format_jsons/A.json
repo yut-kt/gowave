@@ -1,0 +1,15 @@
+{
+  "chunk_id": "RIFF",
+  "chunk_size": 1,
+  "format": "WAVE",
+  "sub_chunk_1_id": "fmt ",
+  "sub_chunk_1_size": 16,
+  "audio_format": 1,
+  "num_channels": 1,
+  "sample_rate": 8000,
+  "byte_rate": 16000,
+  "block_align": 2,
+  "bits_per_sample": 16,
+  "sub_chunk_2_id": "data",
+  "sub_chunk_2_size": 0
+}
