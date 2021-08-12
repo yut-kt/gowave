@@ -10,7 +10,7 @@ import (
 type DataChunk struct {
 	id   string
 	size uint32
-	data interface{}
+	Data interface{}
 }
 
 func NewDataChunk(file io.Reader) (*DataChunk, error) {
@@ -54,21 +54,21 @@ func (chunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingN
 		}
 	}
 
-	switch v := chunk.data.(type) {
+	switch v := chunk.Data.(type) {
 	case []uint8:
 		d, ok := data.([]uint8)
 		if !ok {
 			return nil, errors.New("not match interface type")
 		}
-		chunk.data = append(v, d...)
+		chunk.Data = append(v, d...)
 	case []int16:
 		d, ok := data.([]int16)
 		if !ok {
 			return nil, errors.New("not match interface type")
 		}
-		chunk.data = append(v, d...)
+		chunk.Data = append(v, d...)
 	default:
-		chunk.data = data
+		chunk.Data = data
 	}
 	return data, nil
 }
@@ -143,8 +143,4 @@ func readNSamples(file io.Reader, bitsPerSample uint16, samplingN int) (interfac
 		return nil, err
 	}
 	return data, nil
-}
-
-func (chunk *DataChunk) GetData() interface{} {
-	return chunk.data
 }

@@ -10,11 +10,11 @@ type FmtChunk struct {
 	id            string
 	size          uint32
 	audioFormat   uint16
-	numChannels   uint16
-	sampleRate    uint32
+	NumChannels   uint16
+	SampleRate    uint32
 	byteRate      uint32
 	blockAlign    uint16
-	bitsPerSample uint16
+	BitsPerSample uint16
 }
 
 func NewFmtChunk(file io.Reader) (*FmtChunk, error) {
@@ -27,11 +27,11 @@ func NewFmtChunk(file io.Reader) (*FmtChunk, error) {
 		id:            string(chunkBytes[:4]),
 		size:          binary.LittleEndian.Uint32(chunkBytes[4:]),
 		audioFormat:   binary.LittleEndian.Uint16(chunkBytes[8:]),
-		numChannels:   binary.LittleEndian.Uint16(chunkBytes[10:]),
-		sampleRate:    binary.LittleEndian.Uint32(chunkBytes[12:]),
+		NumChannels:   binary.LittleEndian.Uint16(chunkBytes[10:]),
+		SampleRate:    binary.LittleEndian.Uint32(chunkBytes[12:]),
 		byteRate:      binary.LittleEndian.Uint32(chunkBytes[16:]),
 		blockAlign:    binary.LittleEndian.Uint16(chunkBytes[20:]),
-		bitsPerSample: binary.LittleEndian.Uint16(chunkBytes[22:]),
+		BitsPerSample: binary.LittleEndian.Uint16(chunkBytes[22:]),
 	}
 	if err := chunk.validate(); err != nil {
 		return nil, err
@@ -49,23 +49,11 @@ func (chunk *FmtChunk) validate() error {
 	if chunk.audioFormat != 1 {
 		return errors.New("FmtChunk: AudioFormat still only supports 1(PCM)")
 	}
-	if chunk.numChannels != 1 {
+	if chunk.NumChannels != 1 {
 		return errors.New("FmtChunk: NumChannels still only supports 1(Mono)")
 	}
-	if chunk.bitsPerSample != 8 && chunk.bitsPerSample != 16 {
+	if chunk.BitsPerSample != 8 && chunk.BitsPerSample != 16 {
 		return errors.New("FmtChunk: BitsPerSample still only supports 8 or 16")
 	}
 	return nil
-}
-
-func (chunk *FmtChunk) GetNumChannels() uint16 {
-	return chunk.numChannels
-}
-
-func (chunk *FmtChunk) GetSampleRate() uint32 {
-	return chunk.sampleRate
-}
-
-func (chunk *FmtChunk) GetBitsPerSample() uint16 {
-	return chunk.bitsPerSample
 }

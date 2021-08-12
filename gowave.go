@@ -4,7 +4,7 @@ package gowave
 import (
 	"io"
 
-	"github.com/yut-kt/gowave/chunk"
+	"github.com/yut-kt/gowave/internal/chunk"
 )
 
 type Wave struct {
@@ -48,7 +48,7 @@ func (wave *Wave) chunkRead(file io.Reader) error {
 // ReadSamples is a function to read all samples wave data.
 func (wave *Wave) ReadSamples() (interface{}, error) {
 	const fullRead = -1
-	data, err := wave.dataChunk.ReadData(wave.file, wave.fmtChunk.GetBitsPerSample(), fullRead)
+	data, err := wave.dataChunk.ReadData(wave.file, wave.fmtChunk.BitsPerSample, fullRead)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (wave *Wave) ReadSamples() (interface{}, error) {
 
 // ReadNSamples is a function to read N samples wave data.
 func (wave *Wave) ReadNSamples(samplingNum int) (interface{}, error) {
-	data, err := wave.dataChunk.ReadData(wave.file, wave.fmtChunk.GetBitsPerSample(), samplingNum)
+	data, err := wave.dataChunk.ReadData(wave.file, wave.fmtChunk.BitsPerSample, samplingNum)
 	if err != nil {
 		return nil, err
 	}
@@ -66,15 +66,15 @@ func (wave *Wave) ReadNSamples(samplingNum int) (interface{}, error) {
 
 // GetSamplesAlreadyRead is a function to get already read samples wave data.
 func (wave *Wave) GetSamplesAlreadyRead() interface{} {
-	return wave.dataChunk.GetData()
+	return wave.dataChunk.Data
 }
 
 // GetNumChannels is a function to get num channels.
 func (wave *Wave) GetNumChannels() uint16 {
-	return wave.fmtChunk.GetNumChannels()
+	return wave.fmtChunk.NumChannels
 }
 
 // GetSampleRate is a function to get sample rate.
-func (wave Wave) GetSampleRate() uint32 {
-	return wave.fmtChunk.GetSampleRate()
+func (wave *Wave) GetSampleRate() uint32 {
+	return wave.fmtChunk.SampleRate
 }
