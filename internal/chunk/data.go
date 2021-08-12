@@ -8,8 +8,8 @@ import (
 )
 
 type DataChunk struct {
-	id   string
-	size uint32
+	ID   string
+	Size uint32
 	Data interface{}
 }
 
@@ -21,8 +21,8 @@ func NewDataChunk(file io.Reader) (*DataChunk, error) {
 	}
 
 	chunk := &DataChunk{
-		id:   string(chunkHeaderBytes[:4]),
-		size: binary.LittleEndian.Uint32(chunkHeaderBytes[4:]),
+		ID:   string(chunkHeaderBytes[:4]),
+		Size: binary.LittleEndian.Uint32(chunkHeaderBytes[4:]),
 	}
 	if err := chunk.validate(); err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func NewDataChunk(file io.Reader) (*DataChunk, error) {
 }
 
 func (chunk *DataChunk) validate() error {
-	if chunk.id != "data" {
+	if chunk.ID != "data" {
 		return errors.New("DataChunk: ChunkID must be [data]")
 	}
 	return nil

@@ -7,7 +7,7 @@ import (
 	"github.com/yut-kt/gowave"
 )
 
-const WaveFile = "sample_wav/jvs001_VOICEACTRESS100_001.wav"
+const WaveFile = "internal/samples/waves/jvs001_VOICEACTRESS100_001.wav"
 
 func ExampleWave_readWave() {
 	var a, b, c, d, e, x, y int
