@@ -79,13 +79,5 @@ Bits per sample
 - 16-bit
 - 8-bit
 
-## Contribution
-1. Fork ([https://github.com/yut-kt/gowave/fork](https://github.com/yut-kt/gowave/fork))
-2. Checkout the latest version of branch
-3. Create a feature branch
-4. Commit your changes
-5. Run test suite with the `make test` command and confirm that it passes
-6. Create new Pull Request
-
 ## License
 gowave is released under the [MIT License](https://raw.githubusercontent.com/yut-kt/gowave/main/LICENSE).
