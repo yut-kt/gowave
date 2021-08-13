@@ -3,6 +3,7 @@ package gowave_test
 import (
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/yut-kt/gowave"
 )
@@ -114,4 +115,36 @@ func Example() {
 	// e: 0
 	// y: 206905
 	// a+b+c+d+e == y: true
+}
+
+func ExampleWave_GetSamplesAlreadyRead() {
+	file, err := os.Open(WaveFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// Initialization
+	wave, err := gowave.New(file)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("a:", wave.GetSamplesAlreadyRead())
+
+	samples, err := wave.ReadNSamples(5)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("b:", reflect.DeepEqual(samples, wave.GetSamplesAlreadyRead()))
+
+	_, err = wave.ReadNSamples(5)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("c:", 10 == reflect.ValueOf(wave.GetSamplesAlreadyRead()).Len())
+
+	// Output:
+	// a: <nil>
+	// b: true
+	// c: true
 }

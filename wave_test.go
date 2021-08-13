@@ -18,6 +18,7 @@ var (
 		riffChunk: wave_member_structs.GetRiffChunkA(),
 		fmtChunk:  wave_member_structs.GetFmtChunkA(),
 		dataChunk: wave_member_structs.GetDataChunkA(),
+		file:      wave_member_structs.GetFileA(),
 	}
 )
 
@@ -147,33 +148,27 @@ func TestWave_GetSamplesAlreadyRead(t *testing.T) {
 }
 
 func TestWave_ReadNSamples(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
-	}
 	type args struct {
 		samplingNum int
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
+		wave    *Wave
 		want    interface{}
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "num error",
+			args:    args{0},
+			wave:    waveA,
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
-			}
-			got, err := wave.ReadNSamples(tt.args.samplingNum)
+			got, err := tt.wave.ReadNSamples(tt.args.samplingNum)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadNSamples() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -186,35 +181,42 @@ func TestWave_ReadNSamples(t *testing.T) {
 }
 
 func TestWave_ReadSamples(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
+	type args struct {
+		filePath string
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		want    interface{}
-		wantErr bool
+		name     string
+		args     args
+		wantWave *Wave
+		wantErr  bool
 	}{
-		// TODO: Add test cases.
+		{name: "testA", args: args{filePath: aWaveFilePath}, wantWave: waveA, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
+			f, err := os.Open(tt.args.filePath)
+			if err != nil {
+				t.Errorf("os.Open(%v) error = %v", tt.args.filePath, err)
 			}
-			got, err := wave.ReadSamples()
+
+			gotWave, err := New(f)
+			if err != nil {
+				t.Errorf("New(f) error = %v", err)
+			}
+
+			got, err := gotWave.ReadSamples()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadSamples() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadSamples() got = %v, want %v", got, tt.want)
+
+			want, err := tt.wantWave.ReadSamples()
+			if err != nil {
+				t.Errorf("tt.wantWave.ReadSamples() error = %v", err)
+			}
+
+			if !reflect.DeepEqual(got, want) {
+				t.Errorf("ReadSamples() got = %v, want %v", got, want)
 			}
 		})
 	}
