@@ -1,7 +1,6 @@
 package gowave
 
 import (
-	"io"
 	"os"
 	"reflect"
 	"testing"
@@ -27,6 +26,21 @@ func notWaveEqual(gotWave *Wave, wantWave *Wave) bool {
 	return !reflect.DeepEqual(gotWave.riffChunk, wantWave.riffChunk) ||
 		!reflect.DeepEqual(gotWave.fmtChunk, wantWave.fmtChunk) ||
 		!reflect.DeepEqual(gotWave.dataChunk, wantWave.dataChunk)
+}
+
+// Wave initialization common function for testing
+func newWave(t *testing.T, filePath string) *Wave {
+	f, err := os.Open(filePath)
+	if err != nil {
+		t.Errorf("os.Open(%v) error = %v", filePath, err)
+	}
+
+	w, err := New(f)
+	if err != nil {
+		t.Errorf("New(f) error = %v", err)
+	}
+
+	return w
 }
 
 func TestNew(t *testing.T) {
@@ -119,28 +133,33 @@ func TestWave_GetSampleRate(t *testing.T) {
 }
 
 func TestWave_GetSamplesAlreadyRead(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
+	type args struct {
+		filePath string
+		readN    int
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		want   interface{}
+		name     string
+		args     args
+		wantWave *Wave
+		want     interface{}
 	}{
-		// TODO: Add test cases.
+		{name: "testA0", args: args{filePath: aWaveFilePath, readN: 0}, wantWave: waveA},
+		{name: "testA5", args: args{filePath: aWaveFilePath, readN: 5}, wantWave: waveA},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
+			gotWave := newWave(t, tt.args.filePath)
+
+			if tt.args.readN > 0 {
+				if _, err := gotWave.ReadNSamples(tt.args.readN); err != nil {
+					t.Errorf("gotWave.ReadNSamples(%v) error = %v", tt.args.readN, err)
+				}
+				if _, err := tt.wantWave.ReadNSamples(tt.args.readN); err != nil {
+					t.Errorf("tt.wantWave.ReadNSamples(%v) error = %v", tt.args.readN, err)
+				}
 			}
-			if got := wave.GetSamplesAlreadyRead(); !reflect.DeepEqual(got, tt.want) {
+
+			if got := gotWave.GetSamplesAlreadyRead(); !reflect.DeepEqual(got, tt.wantWave.GetSamplesAlreadyRead()) {
 				t.Errorf("GetSamplesAlreadyRead() = %v, want %v", got, tt.want)
 			}
 		})
@@ -194,15 +213,7 @@ func TestWave_ReadSamples(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f, err := os.Open(tt.args.filePath)
-			if err != nil {
-				t.Errorf("os.Open(%v) error = %v", tt.args.filePath, err)
-			}
-
-			gotWave, err := New(f)
-			if err != nil {
-				t.Errorf("New(f) error = %v", err)
-			}
+			gotWave := newWave(t, tt.args.filePath)
 
 			got, err := gotWave.ReadSamples()
 			if (err != nil) != tt.wantErr {
@@ -223,32 +234,25 @@ func TestWave_ReadSamples(t *testing.T) {
 }
 
 func TestWave_chunkRead(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
-	}
 	type args struct {
-		file io.Reader
+		filePath string
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{name: "testA", args: args{filePath: aWaveFilePath}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
+			file, err := os.Open(tt.args.filePath)
+			if err != nil {
+				t.Errorf("os.Open(%v) error = %v", tt.args.filePath, err)
 			}
-			if err := wave.chunkRead(tt.args.file); (err != nil) != tt.wantErr {
+
+			wave := &Wave{file: file}
+			if err := wave.chunkRead(); (err != nil) != tt.wantErr {
 				t.Errorf("chunkRead() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
