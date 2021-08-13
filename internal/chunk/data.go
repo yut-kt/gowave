@@ -39,6 +39,7 @@ func (chunk *DataChunk) validate() error {
 	return nil
 }
 
+// ReadData is a function to read the sample in the wave.
 func (chunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingNum int) (interface{}, error) {
 	var (
 		data    interface{}
