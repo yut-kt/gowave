@@ -9,7 +9,7 @@ import (
 
 const WaveFile = "internal/samples/waves/jvs001_VOICEACTRESS100_001.wav"
 
-func ExampleWave_readWave() {
+func Example() {
 	var a, b, c, d, e, x, y int
 
 	file, err := os.Open(WaveFile)
