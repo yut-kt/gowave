@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	sample_wave_structs "github.com/yut-kt/gowave/internal/samples/wave_member_structs"
+	"github.com/yut-kt/gowave/internal/samples/wave_member_structs"
 
 	"github.com/yut-kt/gowave/internal/chunk"
 )
@@ -31,9 +31,9 @@ func TestNew(t *testing.T) {
 			name: "A",
 			args: args{file: aFile},
 			want: &Wave{
-				riffChunk: sample_wave_structs.GetRiffChunkA(),
-				fmtChunk:  sample_wave_structs.GetFmtChunkA(),
-				dataChunk: sample_wave_structs.GetDataChunkA(),
+				riffChunk: wave_member_structs.GetRiffChunkA(),
+				fmtChunk:  wave_member_structs.GetFmtChunkA(),
+				dataChunk: wave_member_structs.GetDataChunkA(),
 				file:      aFile,
 			},
 			wantErr: false,
@@ -64,7 +64,7 @@ func TestWave_GetNumChannels(t *testing.T) {
 	}{
 		{
 			name:   "A",
-			fields: fields{fmtChunk: sample_wave_structs.GetFmtChunkA()},
+			fields: fields{fmtChunk: wave_member_structs.GetFmtChunkA()},
 			want:   1,
 		},
 	}
@@ -91,7 +91,7 @@ func TestWave_GetSampleRate(t *testing.T) {
 	}{
 		{
 			name:   "A",
-			fields: fields{fmtChunk: sample_wave_structs.GetFmtChunkA()},
+			fields: fields{fmtChunk: wave_member_structs.GetFmtChunkA()},
 			want:   8000,
 		},
 	}
