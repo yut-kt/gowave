@@ -1,244 +1,117 @@
-package gowave
+package gowave_test
 
 import (
-	"io"
+	"fmt"
 	"os"
-	"reflect"
-	"testing"
 
-	sample_wave_structs "github.com/yut-kt/gowave/internal/samples/wave_member_structs"
-
-	"github.com/yut-kt/gowave/internal/chunk"
+	"github.com/yut-kt/gowave"
 )
 
-const aWaveFilePath = "internal/samples/waves/A.wav"
+const WaveFile = "internal/samples/waves/jvs001_VOICEACTRESS100_001.wav"
 
-func TestNew(t *testing.T) {
-	type args struct {
-		file io.Reader
-	}
-	aFile, err := os.Open(aWaveFilePath)
+func ExampleWave_readWave() {
+	var a, b, c, d, e, x, y int
+
+	file, err := os.Open(WaveFile)
 	if err != nil {
-		t.Error(err)
+		panic(err)
 	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *Wave
-		wantErr bool
-	}{
-		{
-			name: "A",
-			args: args{file: aFile},
-			want: &Wave{
-				riffChunk: sample_wave_structs.GetRiffChunkA(),
-				fmtChunk:  sample_wave_structs.GetFmtChunkA(),
-				dataChunk: sample_wave_structs.GetDataChunkA(),
-				file:      aFile,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := New(tt.args.file)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
-func TestWave_GetNumChannels(t *testing.T) {
-	type fields struct {
-		fmtChunk *chunk.FmtChunk
+	// Initialization
+	wave, err := gowave.New(file)
+	if err != nil {
+		panic(err)
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   uint16
-	}{
-		{
-			name:   "A",
-			fields: fields{fmtChunk: sample_wave_structs.GetFmtChunkA()},
-			want:   1,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				fmtChunk: tt.fields.fmtChunk,
-			}
-			if got := wave.GetNumChannels(); got != tt.want {
-				t.Errorf("GetNumChannels() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
-func TestWave_GetSampleRate(t *testing.T) {
-	type fields struct {
-		fmtChunk *chunk.FmtChunk
+	// Read 100000 Samples
+	samples, err := wave.ReadNSamples(100000)
+	if err != nil {
+		panic(err)
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   uint32
-	}{
-		{
-			name:   "A",
-			fields: fields{fmtChunk: sample_wave_structs.GetFmtChunkA()},
-			want:   8000,
-		},
+	switch v := samples.(type) {
+	case []uint8:
+	case []int16:
+		a = len(v)
+		fmt.Println("a:", a)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				fmtChunk: tt.fields.fmtChunk,
-			}
-			if got := wave.GetSampleRate(); got != tt.want {
-				t.Errorf("GetSampleRate() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
-func TestWave_GetSamplesAlreadyRead(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
+	// Read 1000 Samples
+	samples, err = wave.ReadNSamples(1000)
+	if err != nil {
+		panic(err)
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   interface{}
-	}{
-		// TODO: Add test cases.
+	switch v := samples.(type) {
+	case []uint8:
+	case []int16:
+		b = len(v)
+		fmt.Println("b:", b)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
-			}
-			if got := wave.GetSamplesAlreadyRead(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetSamplesAlreadyRead() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
-func TestWave_ReadNSamples(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
+	// Returns the stock of Samples read so far
+	samples = wave.GetSamplesAlreadyRead()
+	switch v := samples.(type) {
+	case []uint8:
+	case []int16:
+		x = len(v)
+		fmt.Println("x:", x)
 	}
-	type args struct {
-		samplingNum int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    interface{}
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
-			}
-			got, err := wave.ReadNSamples(tt.args.samplingNum)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadNSamples() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadNSamples() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
-func TestWave_ReadSamples(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    interface{}
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
-			}
-			got, err := wave.ReadSamples()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadSamples() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadSamples() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	fmt.Println("a+b == x:", a+b == x)
 
-func TestWave_chunkRead(t *testing.T) {
-	type fields struct {
-		riffChunk *chunk.RiffChunk
-		fmtChunk  *chunk.FmtChunk
-		dataChunk *chunk.DataChunk
-		file      io.Reader
+	// If the number of readable samples is exceeded,
+	// the Samples up to EOF are returned instead of the specified Samples
+	samples, err = wave.ReadNSamples(200000)
+	if err != nil {
+		panic(err)
 	}
-	type args struct {
-		file io.Reader
+	switch v := samples.(type) {
+	case []uint8:
+	case []int16:
+		c = len(v)
+		fmt.Println("c:", c)
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
+
+	// Returns [] if there is no Readable sample
+	samples, err = wave.ReadSamples()
+	if err != nil {
+		panic(err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			wave := &Wave{
-				riffChunk: tt.fields.riffChunk,
-				fmtChunk:  tt.fields.fmtChunk,
-				dataChunk: tt.fields.dataChunk,
-				file:      tt.fields.file,
-			}
-			if err := wave.chunkRead(tt.args.file); (err != nil) != tt.wantErr {
-				t.Errorf("chunkRead() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+	switch v := samples.(type) {
+	case []uint8:
+	case []int16:
+		d = len(v)
+		fmt.Println("d:", d)
 	}
+
+	// Returns [] if there is no Readable sample
+	samples, err = wave.ReadSamples()
+	if err != nil {
+		panic(err)
+	}
+	switch v := samples.(type) {
+	case []uint8:
+	case []int16:
+		e = len(v)
+		fmt.Println("e:", e)
+	}
+
+	samples = wave.GetSamplesAlreadyRead()
+	switch v := samples.(type) {
+	case []uint8:
+	case []int16:
+		y = len(v)
+		fmt.Println("y:", y)
+	}
+
+	fmt.Println("a+b+c+d+e == y:", a+b+c+d+e == y)
+	// Output:
+	// a: 100000
+	// b: 1000
+	// x: 101000
+	// a+b == x: true
+	// c: 105905
+	// d: 0
+	// e: 0
+	// y: 206905
+	// a+b+c+d+e == y: true
 }
