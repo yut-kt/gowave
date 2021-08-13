@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// DataChunk is a structure that handles data subChunk of wave.
 type DataChunk struct {
 	ID   string
 	Size uint32

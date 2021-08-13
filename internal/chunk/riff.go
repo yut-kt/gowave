@@ -6,6 +6,7 @@ import (
 	"io"
 )
 
+// RiffChunk is a structure that handles riff chunk descriptor of wave.
 type RiffChunk struct {
 	ID     string
 	Size   uint32

@@ -6,6 +6,7 @@ import (
 	"io"
 )
 
+// FmtChunk is a structure that handles fmt subChunk of wave.
 type FmtChunk struct {
 	ID            string
 	Size          uint32

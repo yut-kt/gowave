@@ -7,6 +7,7 @@ import (
 	"github.com/yut-kt/gowave/internal/chunk"
 )
 
+// Wave is a structure that handles wav files.
 type Wave struct {
 	riffChunk *chunk.RiffChunk
 	fmtChunk  *chunk.FmtChunk
