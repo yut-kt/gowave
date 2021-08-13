@@ -6,12 +6,14 @@ import (
 	"io"
 )
 
+// RiffChunk is a structure that handles riff chunk descriptor of wave.
 type RiffChunk struct {
 	ID     string
 	Size   uint32
 	Format string
 }
 
+// NewRiffChunk is a function to construct RiffChunk struct.
 func NewRiffChunk(file io.Reader) (*RiffChunk, error) {
 	const chunkByteSize = 12
 	chunkBytes := make([]byte, chunkByteSize)

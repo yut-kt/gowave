@@ -7,12 +7,14 @@ import (
 	"io"
 )
 
+// DataChunk is a structure that handles data subChunk of wave.
 type DataChunk struct {
 	ID   string
 	Size uint32
 	Data interface{}
 }
 
+// NewDataChunk is a function to construct DataChunk struct.
 func NewDataChunk(file io.Reader) (*DataChunk, error) {
 	const chunkHeaderByteSize = 8
 	chunkHeaderBytes := make([]byte, chunkHeaderByteSize)
@@ -37,6 +39,7 @@ func (chunk *DataChunk) validate() error {
 	return nil
 }
 
+// ReadData is a function to read the sample in the wave.
 func (chunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingNum int) (interface{}, error) {
 	var (
 		data    interface{}

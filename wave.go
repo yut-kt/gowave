@@ -1,12 +1,14 @@
-// The package gowave provides support for reading WAV files.
+// Package gowave provides support for reading WAV files.
 package gowave
 
 import (
+	"errors"
 	"io"
 
 	"github.com/yut-kt/gowave/internal/chunk"
 )
 
+// Wave is a structure that handles wav files.
 type Wave struct {
 	riffChunk *chunk.RiffChunk
 	fmtChunk  *chunk.FmtChunk
@@ -17,26 +19,26 @@ type Wave struct {
 // New is a function to construct Wave struct.
 func New(file io.Reader) (*Wave, error) {
 	wave := &Wave{file: file}
-	if err := wave.chunkRead(file); err != nil {
+	if err := wave.chunkRead(); err != nil {
 		return nil, err
 	}
 	return wave, nil
 }
 
-func (wave *Wave) chunkRead(file io.Reader) error {
-	riffChunk, err := chunk.NewRiffChunk(file)
+func (wave *Wave) chunkRead() error {
+	riffChunk, err := chunk.NewRiffChunk(wave.file)
 	if err != nil {
 		return err
 	}
 	wave.riffChunk = riffChunk
 
-	fmtChunk, err := chunk.NewFmtChunk(file)
+	fmtChunk, err := chunk.NewFmtChunk(wave.file)
 	if err != nil {
 		return err
 	}
 	wave.fmtChunk = fmtChunk
 
-	dataChunk, err := chunk.NewDataChunk(file)
+	dataChunk, err := chunk.NewDataChunk(wave.file)
 	if err != nil {
 		return err
 	}
@@ -57,6 +59,9 @@ func (wave *Wave) ReadSamples() (interface{}, error) {
 
 // ReadNSamples is a function to read N samples wave data.
 func (wave *Wave) ReadNSamples(samplingNum int) (interface{}, error) {
+	if samplingNum < 1 {
+		return nil, errors.New("samplingNum is only natural number")
+	}
 	data, err := wave.dataChunk.ReadData(wave.file, wave.fmtChunk.BitsPerSample, samplingNum)
 	if err != nil {
 		return nil, err

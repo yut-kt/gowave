@@ -6,6 +6,7 @@ import (
 	"io"
 )
 
+// FmtChunk is a structure that handles fmt subChunk of wave.
 type FmtChunk struct {
 	ID            string
 	Size          uint32
@@ -17,6 +18,7 @@ type FmtChunk struct {
 	BitsPerSample uint16
 }
 
+// NewFmtChunk is a function to construct FmtChunk struct.
 func NewFmtChunk(file io.Reader) (*FmtChunk, error) {
 	const chunkByteSize = 24
 	chunkBytes := make([]byte, chunkByteSize)
