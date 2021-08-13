@@ -1,4 +1,4 @@
-// The package gowave provides support for reading WAV files.
+// Package gowave provides support for reading WAV files.
 package gowave
 
 import (
