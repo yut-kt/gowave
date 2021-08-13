@@ -13,13 +13,24 @@ import (
 
 const aWaveFilePath = "internal/samples/waves/A.wav"
 
+var (
+	waveA = &Wave{
+		riffChunk: wave_member_structs.GetRiffChunkA(),
+		fmtChunk:  wave_member_structs.GetFmtChunkA(),
+		dataChunk: wave_member_structs.GetDataChunkA(),
+	}
+)
+
+// Equal test of io is difficult, so check only chunk.
+func notWaveEqual(gotWave *Wave, wantWave *Wave) bool {
+	return !reflect.DeepEqual(gotWave.riffChunk, wantWave.riffChunk) ||
+		!reflect.DeepEqual(gotWave.fmtChunk, wantWave.fmtChunk) ||
+		!reflect.DeepEqual(gotWave.dataChunk, wantWave.dataChunk)
+}
+
 func TestNew(t *testing.T) {
 	type args struct {
-		file io.Reader
-	}
-	aFile, err := os.Open(aWaveFilePath)
-	if err != nil {
-		t.Error(err)
+		filePath string
 	}
 	tests := []struct {
 		name    string
@@ -28,25 +39,24 @@ func TestNew(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "A",
-			args: args{file: aFile},
-			want: &Wave{
-				riffChunk: wave_member_structs.GetRiffChunkA(),
-				fmtChunk:  wave_member_structs.GetFmtChunkA(),
-				dataChunk: wave_member_structs.GetDataChunkA(),
-				file:      aFile,
-			},
+			name:    "A",
+			args:    args{filePath: aWaveFilePath},
+			want:    waveA,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := New(tt.args.file)
+			file, err := os.Open(tt.args.filePath)
+			if err != nil {
+				t.Error(err)
+			}
+			got, err := New(file)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if notWaveEqual(got, tt.want) {
 				t.Errorf("New() got = %v, want %v", got, tt.want)
 			}
 		})
