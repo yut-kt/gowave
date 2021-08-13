@@ -13,6 +13,7 @@ type RiffChunk struct {
 	Format string
 }
 
+// NewRiffChunk is a function to construct RiffChunk struct.
 func NewRiffChunk(file io.Reader) (*RiffChunk, error) {
 	const chunkByteSize = 12
 	chunkBytes := make([]byte, chunkByteSize)

@@ -14,6 +14,7 @@ type DataChunk struct {
 	Data interface{}
 }
 
+// NewDataChunk is a function to construct DataChunk struct.
 func NewDataChunk(file io.Reader) (*DataChunk, error) {
 	const chunkHeaderByteSize = 8
 	chunkHeaderBytes := make([]byte, chunkHeaderByteSize)
