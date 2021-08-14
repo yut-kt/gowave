@@ -3,7 +3,6 @@ package wave_member_structs
 
 import (
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/yut-kt/gowave/internal/chunk"
@@ -31,14 +30,6 @@ func GetFmtChunkA() *chunk.FmtChunk {
 }
 
 func GetDataChunkA() *chunk.DataChunk {
-	return &chunk.DataChunk{
-		ID:   "data",
-		Size: 0,
-		Data: nil,
-	}
-}
-
-func GetFileA() io.Reader {
 	f, err := os.Open("internal/samples/waves/A.wav")
 	if err != nil {
 		panic(err)
@@ -56,5 +47,10 @@ func GetFileA() io.Reader {
 		panic(err)
 	}
 
-	return f
+	return &chunk.DataChunk{
+		File: f,
+		ID:   "data",
+		Size: 0,
+		Data: nil,
+	}
 }
