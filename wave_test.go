@@ -136,7 +136,7 @@ func TestWave_GetSampleRate(t *testing.T) {
 func TestWave_GetSamplesAlreadyRead(t *testing.T) {
 	type args struct {
 		filePath string
-		readN    int
+		readN    int64
 	}
 	tests := []struct {
 		name     string
@@ -169,7 +169,7 @@ func TestWave_GetSamplesAlreadyRead(t *testing.T) {
 
 func TestWave_ReadNSamples(t *testing.T) {
 	type args struct {
-		samplingNum int
+		samplingNum int64
 	}
 	tests := []struct {
 		name    string

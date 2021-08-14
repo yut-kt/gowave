@@ -57,7 +57,7 @@ func (wave *Wave) ReadSamples() (interface{}, error) {
 }
 
 // ReadNSamples is a function to read N samples wave data.
-func (wave *Wave) ReadNSamples(samplingNum int) (interface{}, error) {
+func (wave *Wave) ReadNSamples(samplingNum int64) (interface{}, error) {
 	if samplingNum < 1 {
 		return nil, errors.New("samplingNum is only natural number")
 	}

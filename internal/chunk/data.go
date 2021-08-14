@@ -1,7 +1,6 @@
 package chunk
 
 import (
-	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -42,21 +41,10 @@ func (chunk *DataChunk) validate() error {
 }
 
 // ReadData is a function to read the sample in the wave.
-func (chunk *DataChunk) ReadData(bitsPerSample uint16, samplingNum int) (interface{}, error) {
-	var (
-		data    interface{}
-		funcErr error
-	)
-	if samplingNum == -1 {
-		data, funcErr = chunk.readAllSamples(bitsPerSample)
-		if funcErr != nil {
-			return nil, funcErr
-		}
-	} else {
-		data, funcErr = chunk.readNSamples(bitsPerSample, samplingNum)
-		if funcErr != nil {
-			return nil, funcErr
-		}
+func (chunk *DataChunk) ReadData(bitsPerSample uint16, samplingNum int64) (interface{}, error) {
+	data, err := chunk.readSamples(bitsPerSample, samplingNum)
+	if err != nil {
+		return nil, err
 	}
 
 	switch v := chunk.Data.(type) {
@@ -78,74 +66,62 @@ func (chunk *DataChunk) ReadData(bitsPerSample uint16, samplingNum int) (interfa
 	return data, nil
 }
 
-func (chunk *DataChunk) readAllSamples(bitsPerSample uint16) (interface{}, error) {
+func (chunk *DataChunk) readSamples(bitsPerSample uint16, samplingN int64) (interface{}, error) {
 	var data interface{}
 
-	// TODO: Consider calculating from the seek position and the eof position in io.ReadSeeker.
-	b, err := io.ReadAll(chunk.File)
+	readableByteSize, err := chunk.getByteSizeToReachEOF()
 	if err != nil {
 		return nil, err
 	}
-	buf := bytes.NewReader(b)
 
 	switch bitsPerSample {
 	case 8:
 		const samplingBytes = 1
-		if len(b) == 0 {
+		if readableByteSize == 0 {
 			return make([]uint8, 0), nil
 		}
-		data = make([]uint8, len(b)/samplingBytes)
+		if samplingN > 0 && readableByteSize > samplingN*samplingBytes {
+			data = make([]uint8, samplingN)
+		} else {
+			data = make([]uint8, readableByteSize/samplingBytes)
+		}
 	case 16:
 		const samplingBytes = 2
-		if len(b) == 0 {
+		if readableByteSize == 0 {
 			return make([]int16, 0), nil
 		}
-		data = make([]int16, len(b)/samplingBytes)
+		if samplingN > 0 && readableByteSize > samplingN*samplingBytes {
+			data = make([]int16, samplingN)
+		} else {
+			data = make([]int16, readableByteSize/samplingBytes)
+		}
 	default:
 		return nil, errors.New("not supported bitPerSample number")
 	}
 
-	if err := binary.Read(buf, binary.LittleEndian, data); err != nil {
+	if err := binary.Read(chunk.File, binary.LittleEndian, data); err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
-func (chunk *DataChunk) readNSamples(bitsPerSample uint16, samplingN int) (interface{}, error) {
-	var (
-		data               interface{}
-		buf                *bytes.Reader
-		wasReadableSampleN int
-	)
+func (chunk *DataChunk) getByteSizeToReachEOF() (int64, error) {
+	current, err := chunk.File.Seek(0, 1)
+	if err != nil {
+		return -1, err
+	}
+	end, err := chunk.File.Seek(0, 2)
+	if err != nil {
+		return -1, err
+	}
 
-	switch bitsPerSample {
-	case 8:
-		const samplingBytes = 1
-		b := make([]byte, samplingN*samplingBytes)
-		n, err := io.ReadFull(chunk.File, b)
-		if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
-			return nil, err
-		}
-		// store
-		buf = bytes.NewReader(b[:n])
-		wasReadableSampleN = n / samplingBytes
-		data = make([]uint8, wasReadableSampleN)
-	case 16:
-		const samplingBytes = 2
-		b := make([]byte, samplingN*samplingBytes)
-		n, err := io.ReadFull(chunk.File, b)
-		if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
-			return nil, err
-		}
-		// store
-		buf = bytes.NewReader(b[:n])
-		wasReadableSampleN = n / samplingBytes
-		data = make([]int16, wasReadableSampleN)
-	default:
-		return nil, errors.New("not supported bitPerSample number")
+	// Undo Seek Offset
+	c, err := chunk.File.Seek(current, 0)
+	if err != nil {
+		return -1, err
+	} else if current != c {
+		return -1, errors.New("seek Offset could not be undone")
 	}
-	if err := binary.Read(buf, binary.LittleEndian, data); err != nil {
-		return nil, err
-	}
-	return data, nil
+
+	return end - current, nil
 }
