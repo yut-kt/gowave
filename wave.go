@@ -13,11 +13,11 @@ type Wave struct {
 	riffChunk *chunk.RiffChunk
 	fmtChunk  *chunk.FmtChunk
 	dataChunk *chunk.DataChunk
-	file      io.Reader
+	file      io.ReadSeeker
 }
 
 // New is a function to construct Wave struct.
-func New(file io.Reader) (*Wave, error) {
+func New(file io.ReadSeeker) (*Wave, error) {
 	wave := &Wave{file: file}
 	if err := wave.chunkRead(); err != nil {
 		return nil, err

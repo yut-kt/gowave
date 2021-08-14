@@ -38,7 +38,7 @@ func GetDataChunkA() *chunk.DataChunk {
 	}
 }
 
-func GetFileA() io.Reader {
+func GetFileA() io.ReadSeeker {
 	f, err := os.Open("internal/samples/waves/A.wav")
 	if err != nil {
 		panic(err)
