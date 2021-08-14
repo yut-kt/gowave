@@ -13,32 +13,31 @@ type Wave struct {
 	riffChunk *chunk.RiffChunk
 	fmtChunk  *chunk.FmtChunk
 	dataChunk *chunk.DataChunk
-	file      io.ReadSeeker
 }
 
 // New is a function to construct Wave struct.
 func New(file io.ReadSeeker) (*Wave, error) {
-	wave := &Wave{file: file}
-	if err := wave.chunkRead(); err != nil {
+	wave := new(Wave)
+	if err := wave.chunkRead(file); err != nil {
 		return nil, err
 	}
 	return wave, nil
 }
 
-func (wave *Wave) chunkRead() error {
-	riffChunk, err := chunk.NewRiffChunk(wave.file)
+func (wave *Wave) chunkRead(file io.ReadSeeker) error {
+	riffChunk, err := chunk.NewRiffChunk(file)
 	if err != nil {
 		return err
 	}
 	wave.riffChunk = riffChunk
 
-	fmtChunk, err := chunk.NewFmtChunk(wave.file)
+	fmtChunk, err := chunk.NewFmtChunk(file)
 	if err != nil {
 		return err
 	}
 	wave.fmtChunk = fmtChunk
 
-	dataChunk, err := chunk.NewDataChunk(wave.file)
+	dataChunk, err := chunk.NewDataChunk(file)
 	if err != nil {
 		return err
 	}
@@ -50,7 +49,7 @@ func (wave *Wave) chunkRead() error {
 // ReadSamples is a function to read all samples wave data.
 func (wave *Wave) ReadSamples() (interface{}, error) {
 	const fullRead = -1
-	data, err := wave.dataChunk.ReadData(wave.file, wave.fmtChunk.BitsPerSample, fullRead)
+	data, err := wave.dataChunk.ReadData(wave.fmtChunk.BitsPerSample, fullRead)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +61,7 @@ func (wave *Wave) ReadNSamples(samplingNum int) (interface{}, error) {
 	if samplingNum < 1 {
 		return nil, errors.New("samplingNum is only natural number")
 	}
-	data, err := wave.dataChunk.ReadData(wave.file, wave.fmtChunk.BitsPerSample, samplingNum)
+	data, err := wave.dataChunk.ReadData(wave.fmtChunk.BitsPerSample, samplingNum)
 	if err != nil {
 		return nil, err
 	}

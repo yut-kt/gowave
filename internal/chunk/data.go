@@ -9,13 +9,14 @@ import (
 
 // DataChunk is a structure that handles data subChunk of wave.
 type DataChunk struct {
+	File io.ReadSeeker
 	ID   string
 	Size uint32
 	Data interface{}
 }
 
 // NewDataChunk is a function to construct DataChunk struct.
-func NewDataChunk(file io.Reader) (*DataChunk, error) {
+func NewDataChunk(file io.ReadSeeker) (*DataChunk, error) {
 	const chunkHeaderByteSize = 8
 	chunkHeaderBytes := make([]byte, chunkHeaderByteSize)
 	if _, err := io.ReadFull(file, chunkHeaderBytes); err != nil {
@@ -23,6 +24,7 @@ func NewDataChunk(file io.Reader) (*DataChunk, error) {
 	}
 
 	chunk := &DataChunk{
+		File: file,
 		ID:   string(chunkHeaderBytes[:4]),
 		Size: binary.LittleEndian.Uint32(chunkHeaderBytes[4:]),
 	}
@@ -40,18 +42,18 @@ func (chunk *DataChunk) validate() error {
 }
 
 // ReadData is a function to read the sample in the wave.
-func (chunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingNum int) (interface{}, error) {
+func (chunk *DataChunk) ReadData(bitsPerSample uint16, samplingNum int) (interface{}, error) {
 	var (
 		data    interface{}
 		funcErr error
 	)
 	if samplingNum == -1 {
-		data, funcErr = readAllSamples(file, bitsPerSample)
+		data, funcErr = chunk.readAllSamples(bitsPerSample)
 		if funcErr != nil {
 			return nil, funcErr
 		}
 	} else {
-		data, funcErr = readNSamples(file, bitsPerSample, samplingNum)
+		data, funcErr = chunk.readNSamples(bitsPerSample, samplingNum)
 		if funcErr != nil {
 			return nil, funcErr
 		}
@@ -76,11 +78,11 @@ func (chunk *DataChunk) ReadData(file io.Reader, bitsPerSample uint16, samplingN
 	return data, nil
 }
 
-func readAllSamples(file io.Reader, bitsPerSample uint16) (interface{}, error) {
+func (chunk *DataChunk) readAllSamples(bitsPerSample uint16) (interface{}, error) {
 	var data interface{}
 
 	// TODO: Consider calculating from the seek position and the eof position in io.ReadSeeker.
-	b, err := io.ReadAll(file)
+	b, err := io.ReadAll(chunk.File)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +111,7 @@ func readAllSamples(file io.Reader, bitsPerSample uint16) (interface{}, error) {
 	return data, nil
 }
 
-func readNSamples(file io.Reader, bitsPerSample uint16, samplingN int) (interface{}, error) {
+func (chunk *DataChunk) readNSamples(bitsPerSample uint16, samplingN int) (interface{}, error) {
 	var (
 		data               interface{}
 		buf                *bytes.Reader
@@ -120,7 +122,7 @@ func readNSamples(file io.Reader, bitsPerSample uint16, samplingN int) (interfac
 	case 8:
 		const samplingBytes = 1
 		b := make([]byte, samplingN*samplingBytes)
-		n, err := io.ReadFull(file, b)
+		n, err := io.ReadFull(chunk.File, b)
 		if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
 			return nil, err
 		}
@@ -131,7 +133,7 @@ func readNSamples(file io.Reader, bitsPerSample uint16, samplingN int) (interfac
 	case 16:
 		const samplingBytes = 2
 		b := make([]byte, samplingN*samplingBytes)
-		n, err := io.ReadFull(file, b)
+		n, err := io.ReadFull(chunk.File, b)
 		if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
 			return nil, err
 		}

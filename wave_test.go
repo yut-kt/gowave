@@ -17,15 +17,16 @@ var (
 		riffChunk: wave_member_structs.GetRiffChunkA(),
 		fmtChunk:  wave_member_structs.GetFmtChunkA(),
 		dataChunk: wave_member_structs.GetDataChunkA(),
-		file:      wave_member_structs.GetFileA(),
 	}
 )
 
-// Equal test of io is difficult, so check only chunk.
+// Equal test of io is difficult, so check only field excluding io.
 func notWaveEqual(gotWave *Wave, wantWave *Wave) bool {
 	return !reflect.DeepEqual(gotWave.riffChunk, wantWave.riffChunk) ||
 		!reflect.DeepEqual(gotWave.fmtChunk, wantWave.fmtChunk) ||
-		!reflect.DeepEqual(gotWave.dataChunk, wantWave.dataChunk)
+		!reflect.DeepEqual(
+			[]interface{}{gotWave.dataChunk.ID, gotWave.dataChunk.Size, gotWave.dataChunk.Data},
+			[]interface{}{wantWave.dataChunk.ID, wantWave.dataChunk.Size, wantWave.dataChunk.Data})
 }
 
 // Wave initialization common function for testing
@@ -251,8 +252,8 @@ func TestWave_chunkRead(t *testing.T) {
 				t.Errorf("os.Open(%v) error = %v", tt.args.filePath, err)
 			}
 
-			wave := &Wave{file: file}
-			if err := wave.chunkRead(); (err != nil) != tt.wantErr {
+			wave := new(Wave)
+			if err := wave.chunkRead(file); (err != nil) != tt.wantErr {
 				t.Errorf("chunkRead() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
