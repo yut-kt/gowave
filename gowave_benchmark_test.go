@@ -16,7 +16,7 @@ var waveFiles = map[string]*Wave{
 }
 
 func BenchmarkNew(b *testing.B) {
-	for waveFile, _ := range waveFiles {
+	for waveFile := range waveFiles {
 		f, err := os.Open(waveFile)
 		if err != nil {
 			b.Errorf("os.Open(%v) error = %v", waveFile, err)
