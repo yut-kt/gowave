@@ -1,7 +1,6 @@
 package gowave
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -14,7 +13,7 @@ import (
 type testWave int
 
 const (
-	testWaveA testWave = iota
+	testWaveX testWave = iota
 )
 
 // Equal test of io is difficult, so check only field excluding io.
@@ -28,11 +27,11 @@ func notWaveEqual(gotWave *Wave, wantWave *Wave) bool {
 
 func newTestWave(wave testWave) *Wave {
 	switch wave {
-	case testWaveA:
+	case testWaveX:
 		return &Wave{
-			riffChunk: wave_member_structs.GetRiffChunkA(),
-			fmtChunk:  wave_member_structs.GetFmtChunkA(),
-			dataChunk: wave_member_structs.GetDataChunkA(),
+			riffChunk: wave_member_structs.GetRiffChunkX(),
+			fmtChunk:  wave_member_structs.GetFmtChunkX(),
+			dataChunk: wave_member_structs.GetDataChunkX(),
 		}
 	}
 	return nil
@@ -40,8 +39,8 @@ func newTestWave(wave testWave) *Wave {
 
 func testPath(wave testWave) string {
 	switch wave {
-	case testWaveA:
-		return "internal/samples/waves/A.wav"
+	case testWaveX:
+		return "internal/samples/waves/X.wav"
 	}
 	return ""
 }
@@ -72,9 +71,9 @@ func TestNew(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "A",
-			args:    args{filePath: testPath(testWaveA)},
-			want:    newTestWave(testWaveA),
+			name:    "X",
+			args:    args{filePath: testPath(testWaveX)},
+			want:    newTestWave(testWaveX),
 			wantErr: false,
 		},
 	}
@@ -90,11 +89,9 @@ func TestNew(t *testing.T) {
 				return
 			}
 			if notWaveEqual(got, tt.want) {
-				fmt.Println(got.dataChunk.Data, tt.want.dataChunk.Data)
-				fmt.Printf("%T\n", got.dataChunk.Data)
-				fmt.Printf("%T\n", tt.want.dataChunk.Data)
-
-				t.Errorf("New() got = %v, want %v", got, tt.want)
+				t.Errorf("New() got.riffChun = %v, want.riffChunk %v", got.riffChunk, tt.want.riffChunk)
+				t.Errorf("New() got.fmtChunk = %v, want.fmtChunk %v", got.fmtChunk, tt.want.fmtChunk)
+				t.Errorf("New() got.dataChunk = %v, want.dataChunk %v", got.dataChunk, tt.want.dataChunk)
 			}
 		})
 	}
@@ -111,7 +108,7 @@ func TestWave_GetNumChannels(t *testing.T) {
 	}{
 		{
 			name:   "A",
-			fields: fields{fmtChunk: wave_member_structs.GetFmtChunkA()},
+			fields: fields{fmtChunk: wave_member_structs.GetFmtChunkX()},
 			want:   1,
 		},
 	}
@@ -138,7 +135,7 @@ func TestWave_GetSampleRate(t *testing.T) {
 	}{
 		{
 			name:   "A",
-			fields: fields{fmtChunk: wave_member_structs.GetFmtChunkA()},
+			fields: fields{fmtChunk: wave_member_structs.GetFmtChunkX()},
 			want:   8000,
 		},
 	}
@@ -165,8 +162,8 @@ func TestWave_GetSamplesAlreadyRead(t *testing.T) {
 		wantWave *Wave
 		want     interface{}
 	}{
-		{name: "testA0", args: args{filePath: testPath(testWaveA), readN: 0}, wantWave: newTestWave(testWaveA)},
-		{name: "testA5", args: args{filePath: testPath(testWaveA), readN: 5}, wantWave: newTestWave(testWaveA)},
+		{name: "testA0", args: args{filePath: testPath(testWaveX), readN: 0}, wantWave: newTestWave(testWaveX)},
+		{name: "testA5", args: args{filePath: testPath(testWaveX), readN: 5}, wantWave: newTestWave(testWaveX)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -202,7 +199,7 @@ func TestWave_ReadNSamples(t *testing.T) {
 		{
 			name:    "num error",
 			args:    args{0},
-			wave:    newTestWave(testWaveA),
+			wave:    newTestWave(testWaveX),
 			want:    nil,
 			wantErr: true,
 		},
@@ -231,7 +228,7 @@ func TestWave_ReadSamples(t *testing.T) {
 		wantWave *Wave
 		wantErr  bool
 	}{
-		{name: "testA", args: args{filePath: testPath(testWaveA)}, wantWave: newTestWave(testWaveA), wantErr: false},
+		{name: "testA", args: args{filePath: testPath(testWaveX)}, wantWave: newTestWave(testWaveX), wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -264,7 +261,7 @@ func TestWave_chunkRead(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{name: "testA", args: args{filePath: testPath(testWaveA)}, wantErr: false},
+		{name: "testA", args: args{filePath: testPath(testWaveX)}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

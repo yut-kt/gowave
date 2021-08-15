@@ -8,7 +8,7 @@ import (
 	"github.com/yut-kt/gowave"
 )
 
-const WaveFile = "internal/samples/waves/jvs001_VOICEACTRESS100_001.wav"
+const WaveFile = "internal/samples/waves/X.wav"
 
 func Example() {
 	var a, b, c, d, e, x, y int
@@ -25,7 +25,7 @@ func Example() {
 	}
 
 	// Read 100000 Samples
-	samples, err := wave.ReadNSamples(100000)
+	samples, err := wave.ReadNSamples(10000)
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ func Example() {
 	}
 
 	// Read 1000 Samples
-	samples, err = wave.ReadNSamples(1000)
+	samples, err = wave.ReadNSamples(5000)
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +61,7 @@ func Example() {
 
 	// If the number of readable samples is exceeded,
 	// the Samples up to EOF are returned instead of the specified Samples
-	samples, err = wave.ReadNSamples(200000)
+	samples, err = wave.ReadNSamples(1000000000)
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +85,7 @@ func Example() {
 	}
 
 	// Returns [] if there is no Readable sample
-	samples, err = wave.ReadSamples()
+	samples, err = wave.ReadNSamples(1)
 	if err != nil {
 		panic(err)
 	}
@@ -106,14 +106,14 @@ func Example() {
 
 	fmt.Println("a+b+c+d+e == y:", a+b+c+d+e == y)
 	// Output:
-	// a: 100000
-	// b: 1000
-	// x: 101000
+	// a: 10000
+	// b: 5000
+	// x: 15000
 	// a+b == x: true
-	// c: 105905
+	// c: 1000
 	// d: 0
 	// e: 0
-	// y: 206905
+	// y: 16000
 	// a+b+c+d+e == y: true
 }
 
