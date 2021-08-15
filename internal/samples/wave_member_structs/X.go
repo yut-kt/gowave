@@ -8,15 +8,15 @@ import (
 	"github.com/yut-kt/gowave/internal/chunk"
 )
 
-func GetRiffChunkA() *chunk.RiffChunk {
+func GetRiffChunkX() *chunk.RiffChunk {
 	return &chunk.RiffChunk{
 		ID:     "RIFF",
-		Size:   1,
+		Size:   32036,
 		Format: "WAVE",
 	}
 }
 
-func GetFmtChunkA() *chunk.FmtChunk {
+func GetFmtChunkX() *chunk.FmtChunk {
 	return &chunk.FmtChunk{
 		ID:            "fmt ",
 		Size:          16,
@@ -29,8 +29,8 @@ func GetFmtChunkA() *chunk.FmtChunk {
 	}
 }
 
-func GetDataChunkA() *chunk.DataChunk {
-	f, err := os.Open("internal/samples/waves/A.wav")
+func GetDataChunkX() *chunk.DataChunk {
+	f, err := os.Open("internal/samples/waves/X.wav")
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,7 @@ func GetDataChunkA() *chunk.DataChunk {
 	return &chunk.DataChunk{
 		File: f,
 		ID:   "data",
-		Size: 0,
+		Size: 32000,
 		Data: nil,
 	}
 }
