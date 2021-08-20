@@ -8,10 +8,10 @@ import (
 )
 
 var waveFiles = map[string]*Wave{
-	"internal/samples/waves/A.wav": {
-		riffChunk: wave_member_structs.GetRiffChunkA(),
-		fmtChunk:  wave_member_structs.GetFmtChunkA(),
-		dataChunk: wave_member_structs.GetDataChunkA(),
+	"internal/samples/waves/X.wav": {
+		riffChunk: wave_member_structs.GetRiffChunkX(),
+		fmtChunk:  wave_member_structs.GetFmtChunkX(),
+		dataChunk: wave_member_structs.GetDataChunkX(),
 	},
 }
 
