@@ -10,5 +10,9 @@ cov:
 	rm cover.out
 
 generate:
-	jupyter nbconvert --to notebook --inplace --execute gen/sample_json_generator.ipynb
+	jupyter nbconvert --to notebook \
+ 		--inplace \
+ 		--ClearMetadataPreprocessor.enabled=True \
+ 		--ClearMetadataPreprocessor.clear_notebook_metadata=False \
+	 	--execute gen/sample_json_generator.ipynb
 	go run gen/samples_generator.go
