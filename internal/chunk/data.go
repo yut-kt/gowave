@@ -41,82 +41,63 @@ func (chunk *DataChunk) validate() error {
 }
 
 // ReadData is a function to read the sample in the wave.
-func (chunk *DataChunk) ReadData(bitsPerSample uint16, samplingNum int64) (interface{}, error) {
-	data, err := chunk.readSamples(bitsPerSample, samplingNum)
+func (chunk *DataChunk) ReadData(bitsPerSample uint16, samplingNum int64) (data interface{}, err error) {
+	switch bitsPerSample {
+	case 8:
+		data, err = readSamples[uint8](chunk.File, samplingNum, 1)
+	case 16:
+		data, err = readSamples[int16](chunk.File, samplingNum, 2)
+	}
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	switch v := chunk.Data.(type) {
 	case []uint8:
-		d, ok := data.([]uint8)
-		if !ok {
-			return nil, errors.New("not match interface type")
-		}
+		d, _ := data.([]uint8)
 		chunk.Data = append(v, d...)
 	case []int16:
-		d, ok := data.([]int16)
-		if !ok {
-			return nil, errors.New("not match interface type")
-		}
+		d, _ := data.([]int16)
 		chunk.Data = append(v, d...)
 	default:
 		chunk.Data = data
 	}
-	return data, nil
+	return
 }
 
-func (chunk *DataChunk) readSamples(bitsPerSample uint16, samplingN int64) (interface{}, error) {
-	var data interface{}
+type Sample interface {
+	uint8 | int16
+}
 
-	readableByteSize, err := chunk.getByteSizeToReachEOF()
+func readSamples[S Sample](f io.ReadSeeker, samplingN, samplingBytes int64) (samples []S, err error) {
+	readableByteSize, err := getByteSizeToReachEOF(f)
 	if err != nil {
 		return nil, err
 	}
 
-	switch bitsPerSample {
-	case 8:
-		const samplingBytes = 1
-		if readableByteSize == 0 {
-			return make([]uint8, 0), nil
-		}
-		if samplingN > 0 && readableByteSize > samplingN*samplingBytes {
-			data = make([]uint8, samplingN)
-		} else {
-			data = make([]uint8, readableByteSize/samplingBytes)
-		}
-	case 16:
-		const samplingBytes = 2
-		if readableByteSize == 0 {
-			return make([]int16, 0), nil
-		}
-		if samplingN > 0 && readableByteSize > samplingN*samplingBytes {
-			data = make([]int16, samplingN)
-		} else {
-			data = make([]int16, readableByteSize/samplingBytes)
-		}
-	default:
-		return nil, errors.New("not supported bitPerSample number")
+	if readableByteSize == 0 {
+		samples = make([]S, 0)
+	} else if samplingN > 0 && readableByteSize > samplingN*samplingBytes {
+		samples = make([]S, samplingN)
+	} else {
+		samples = make([]S, readableByteSize/samplingBytes)
 	}
-
-	if err := binary.Read(chunk.File, binary.LittleEndian, data); err != nil {
-		return nil, err
-	}
-	return data, nil
+	err = binary.Read(f, binary.LittleEndian, samples)
+	return
 }
 
-func (chunk *DataChunk) getByteSizeToReachEOF() (int64, error) {
-	current, err := chunk.File.Seek(0, 1)
+func getByteSizeToReachEOF(f io.ReadSeeker) (int64, error) {
+	current, err := f.Seek(0, 1)
 	if err != nil {
 		return -1, err
 	}
-	end, err := chunk.File.Seek(0, 2)
+	end, err := f.Seek(0, 2)
 	if err != nil {
 		return -1, err
 	}
 
 	// Undo Seek Offset
-	c, err := chunk.File.Seek(current, 0)
+	c, err := f.Seek(current, 0)
 	if err != nil {
 		return -1, err
 	} else if current != c {
